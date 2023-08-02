@@ -1,15 +1,20 @@
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'bpmn_element.g.dart';
+
+//@JsonSerializable(includeIfNull: false)
+@JsonSerializable()
 class BpmnElement extends Equatable {
   final String id;
   final String type;
   final String name;
-  final String metaName;
-  final String condition;
-  final String subprocessId;
-  final String description;
+  final String? metaName;
+  final String? condition;
+  final String? subprocessId;
+  final String? description;
   final List<dynamic> inVariables;
-  final String outVariables;
+  final String? outVariables;
   final List<Map<String, String>> properties;
   final String dateCreated;
   final String authorCreated;
@@ -20,12 +25,12 @@ class BpmnElement extends Equatable {
     required this.id,
     required this.type,
     required this.name,
-    required this.metaName,
-    required this.condition,
-    required this.subprocessId,
-    required this.description,
+    this.metaName,
+    this.condition,
+    this.subprocessId,
+    this.description,
     required this.inVariables,
-    required this.outVariables,
+    this.outVariables,
     required this.properties,
     required this.dateCreated,
     required this.authorCreated,
@@ -33,8 +38,12 @@ class BpmnElement extends Equatable {
     required this.authorUpdated,
   });
 
+  factory BpmnElement.fromJson(Map<String, dynamic> json) => _$BpmnElementFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BpmnElementToJson(this);
+
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         id,
         type,
         name,

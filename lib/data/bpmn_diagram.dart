@@ -5,6 +5,9 @@ class BpmnDiagram {
 
   Map<String, BpmnElement> _allElements = {};
 
+  BpmnElement? getElementById({required String id}) {
+    return _allElements[id];
+  }
 
   Map<String, List<String>> _allNodes = {};
 
@@ -17,18 +20,19 @@ class BpmnDiagram {
       _allElements[e.id] = e;
 
       if (e.type == 'flowSequence') {
-        _allNodes[e.id] = [];
-      } else {
-        _allNodes[e.id] = [];
-      }
+        String sourceId = e.properties[0]['value']!;
+        String destinationId = e.properties[1]['value']!;
 
+        _allNodes[e.id] = [destinationId];
+        _allNodes.update(
+          sourceId,
+          (value) => value..add(e.id),
+          ifAbsent: () => [e.id],
+        );
+      } else {
+        _allNodes.putIfAbsent(e.id, () => []);
+      }
     }
   }
 }
 
-//class DiagramNode {
-//  String id;
-//  List<String> children;
-
-//  DiagramNode({required this.id, required this.children});
-//}
