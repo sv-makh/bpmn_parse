@@ -9,9 +9,15 @@ class BpmnDiagram {
     return _allElements[id];
   }
 
+  String firstElementId() { return _startElementId; }
+
+  List<String> nextElements({required String id}) {
+    return _allNodes[id] ?? [];
+  }
+
   Map<String, List<String>> _allNodes = {};
 
-  BpmnDiagram(List<BpmnElement> list) {
+  BpmnDiagram.fromList(List<BpmnElement> list) {
     for (var e in list) {
       if (e.type == 'startEvent') {
         _startElementId = e.id;

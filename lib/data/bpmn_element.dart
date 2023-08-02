@@ -3,7 +3,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'bpmn_element.g.dart';
 
-//@JsonSerializable(includeIfNull: false)
 @JsonSerializable()
 class BpmnElement extends Equatable {
   final String id;
@@ -41,6 +40,13 @@ class BpmnElement extends Equatable {
   factory BpmnElement.fromJson(Map<String, dynamic> json) => _$BpmnElementFromJson(json);
 
   Map<String, dynamic> toJson() => _$BpmnElementToJson(this);
+
+  String toString() {
+    var choice = '';
+    if (properties.length == 3) { choice = ' ${properties[2]['value']}'; }
+    var meta = ' ${metaName ?? ''}';
+    return '$id $type$meta$choice';
+  }
 
   @override
   List<Object?> get props => [

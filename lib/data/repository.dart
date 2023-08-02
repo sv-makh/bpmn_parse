@@ -6,11 +6,10 @@ import 'package:http/http.dart' as http;
 import 'constants.dart';
 
 class Repository {
-  Future<List<BpmnElement>> fetchBpmnElements() async {
+  Future<List<dynamic>> fetchBpmnElements() async {
     final responce = await http.get(Uri.parse(mockDataUri));
 
     if (responce.statusCode == 200) {
-      print(jsonDecode(responce.body)['data']['bpmn']['elements'][0]);
       var listOfElements = jsonDecode(responce.body)['data']['bpmn']['elements'];
       return listOfElements
           .map((data) => BpmnElement.fromJson(data))

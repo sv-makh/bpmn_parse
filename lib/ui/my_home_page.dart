@@ -1,3 +1,4 @@
+import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/repository.dart';
 import 'package:flutter/material.dart';
 
@@ -22,7 +23,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: TextButton(
           onPressed: () {
             repository = Repository();
-            repository.fetchBpmnElements().then((value) => print(value.length));
+            repository.fetchBpmnElements().then((value) {
+              elements = List<BpmnElement>.from(value);
+              print(elements.length);
+              var diagram = BpmnDiagram.fromList(elements);
+              var firstElementId = diagram.firstElementId();
+              var currentElement = firstElementId;
+              print('first element: $firstElementId');
+              var secondElementId = diagram.nextElements(id: firstElementId)[0];
+              print('next element: $secondElementId');
+              List<String> nextElements = diagram.nextElements(id: currentElement);
+              while (nextElements.length == 1) {
+                print(diagram.getElementById(id: currentElement).toString());
+                nextElements = diagram.nextElements(id: currentElement);
+                if (nextElements.length != 1) break;
+                currentElement = nextElements[0];
+              }
+            });
           },
           child: Text('Download & parse'),
         ),
