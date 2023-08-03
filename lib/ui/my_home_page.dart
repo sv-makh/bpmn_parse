@@ -1,5 +1,5 @@
 import 'package:bpmn_parse/data/bpmn_diagram.dart';
-import 'package:bpmn_parse/data/repository.dart';
+import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:flutter/material.dart';
 
 import '../data/bpmn_element.dart';
@@ -12,7 +12,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Repository repository;
+  late Fetcher fetcher;
   late List<BpmnElement> elements;
 
   @override
@@ -22,9 +22,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: TextButton(
           onPressed: () {
-            repository = Repository();
-            repository.fetchBpmnElements().then((value) {
-              elements = List<BpmnElement>.from(value);
+            fetcher = Fetcher();
+            fetcher.fetchBpmnElements().then((value) {
+              elements = value;
               print(elements.length);
               var diagram = BpmnDiagram.fromList(elements);
               var firstElementId = diagram.firstElementId();
