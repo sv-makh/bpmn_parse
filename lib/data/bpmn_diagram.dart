@@ -1,9 +1,20 @@
 import 'package:bpmn_parse/data/bpmn_element.dart';
 
 class BpmnDiagram {
+  //id стартового события диаграммы
   String _startElementId = '';
 
+  //все элементы диаграммы
   Map<String, BpmnElement> _allElements = {};
+
+  //рассматриваем диаграмму как ориентированный граф, вершинами являются
+  // все элементы диаграммы (всех типов, даже flowSequence)
+  //мапа _allNodes - список смежности для этого графа
+  //элемент мапы _allNodes:
+  //ключ - индекс элемента диаграммы
+  //значение - список индексов элементов диаграммы,
+  // в которые можно перейти из данного элемента
+  Map<String, List<String>> _allNodes = {};
 
   BpmnElement? getElementById({required String id}) {
     return _allElements[id];
@@ -11,18 +22,15 @@ class BpmnDiagram {
 
   String firstElementId() { return _startElementId; }
 
+  //получение списка id элементов, к которым можно перейти из заданного элемента
   List<String> nextElements({required String id}) {
     return _allNodes[id] ?? [];
   }
 
-  //рассматриваем диаграмму как граф, вершинами являются все элементы диаграммы
-  //_allNodes - список смежности для этого графа
-  //каждый элемент этой мапы:
-  //ключ - индекс элемента диаграммы
-  //значение - список индексов элементов диаграммы,
-  // в которые можно перейти из данного элемента
-  Map<String, List<String>> _allNodes = {};
-
+  //заполнение:
+  //- первого элемента _startElementId
+  //- списка всех элементов диаграммы _allElements
+  //- списка смежности _allNodes
   BpmnDiagram.fromList(List<BpmnElement> list) {
     for (var e in list) {
       if (e.type == 'startEvent') {
@@ -31,17 +39,26 @@ class BpmnDiagram {
 
       _allElements[e.id] = e;
 
+      //строим список смежности _allNodes
       if (e.type == 'flowSequence') {
         String sourceId = e.properties[0]['value']!;
         String destinationId = e.properties[1]['value']!;
 
+        //если элемент flowSequence, добавляем его
+        //(т.к. он ранее не встречался - как source в flowSequence он не может встретиться)
+        //и добавляем элемент, к которому можно перейти от него
         _allNodes[e.id] = [destinationId];
+        //добавляем данный элемент flowSequence как элемент, к которому можно
+        //перейти из элемента source
         _allNodes.update(
           sourceId,
           (value) => value..add(e.id),
           ifAbsent: () => [e.id],
         );
       } else {
+        //если элемент не flowSequence, информации о связях элементов в нём нет
+        //просто добавляем его в мапу, если его там ещё нет
+        //(он может там уже быть, если уже встретился как source в flowSequence)
         _allNodes.putIfAbsent(e.id, () => []);
       }
     }

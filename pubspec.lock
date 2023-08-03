@@ -5,18 +5,18 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "0816708f5fbcacca324d811297153fe3c8e047beb5c6752e12292d2974c17045"
+      sha256: ae92f5d747aee634b87f89d9946000c2de774be1d6ac3e58268224348cd0101a
       url: "https://pub.dev"
     source: hosted
-    version: "62.0.0"
+    version: "61.0.0"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
-      sha256: "21862995c9932cd082f89d72ae5f5e2c110d1a0204ad06e4ebaee8307b76b834"
+      sha256: ea3d8652bda62982addfd92fdc2d0214e5f82e43325104990d4f4c4a2a313562
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "5.13.0"
   args:
     dependency: transitive
     description:
@@ -169,14 +169,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  dart_internal:
-    dependency: transitive
-    description:
-      name: dart_internal
-      sha256: "689dccc3d5f62affd339534cca548dce12b3a6b32f0f10861569d3025efc0567"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.9"
   dart_style:
     dependency: transitive
     description:
@@ -185,14 +177,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
-  dio:
-    dependency: transitive
-    description:
-      name: dio
-      sha256: "9d6445da1caf8412070670c03c39ad5b12a78cc8c2361417b220905a2bcbdd2f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.3.1"
   equatable:
     dependency: "direct main"
     description:
@@ -371,6 +355,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  mobx:
+    dependency: "direct main"
+    description:
+      name: mobx
+      sha256: "0afcf88b3ee9d6819890bf16c11a727fc8c62cf736fda8e5d3b9b4eace4e62ea"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+  mobx_codegen:
+    dependency: "direct dev"
+    description:
+      name: mobx_codegen
+      sha256: d4beb9cea4b7b014321235f8fdc7c2193ee0fe1d1198e9da7403f8bc85c4407c
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
   package_config:
     dependency: transitive
     description:
@@ -411,22 +411,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.3"
-  retrofit:
-    dependency: "direct main"
-    description:
-      name: retrofit
-      sha256: "5eedbd8f73697f190dabc88520e0bcf2d3b2d9b9ad5c837f1dbb3ee6172d7709"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.1"
-  retrofit_generator:
-    dependency: "direct dev"
-    description:
-      name: retrofit_generator
-      sha256: "9499eb46b3657a62192ddbc208ff7e6c6b768b19e83c1ee6f6b119c864b99690"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.0.8"
   shelf:
     dependency: transitive
     description:
@@ -528,14 +512,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  tuple:
-    dependency: transitive
-    description:
-      name: tuple
-      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -577,4 +553,4 @@ packages:
     source: hosted
     version: "3.1.2"
 sdks:
-  dart: ">=3.0.6 <3.3.0"
+  dart: ">=3.0.6 <4.0.0"

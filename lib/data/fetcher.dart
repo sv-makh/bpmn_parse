@@ -10,8 +10,8 @@ class Fetcher {
     final responce = await http.get(Uri.parse(mockDataUri));
 
     if (responce.statusCode == 200) {
-      var listOfElements = jsonDecode(responce.body)['data']['bpmn']['elements'];
-      return List<BpmnElement>.from(listOfElements
+      var elements = jsonDecode(responce.body)['data']['bpmn']['elements'];
+      return List<BpmnElement>.from(elements
           .map((data) => BpmnElement.fromJson(data))
           .toList());
     } else {
