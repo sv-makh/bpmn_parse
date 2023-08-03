@@ -1,1 +1,0 @@
-const String mockDataUri = 'https://mocki.io/v1/42accf9e-86fe-4860-acf0-29144bf2d440';

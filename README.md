@@ -1,16 +1,18 @@
 # bpmn_parse
 
-A new Flutter project.
+Обход BPMN диаграммы
 
-## Getting Started
+## Скриншоты
 
-This project is a starting point for a Flutter application.
+<img src="assets/before.png" width="200"> <img src="assets/choice.png" width="200"> <img src="assets/after.png" width="200">
 
-A few resources to get you started if this is your first Flutter project:
+## Работа приложения
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- получение списка элементов из JSON [lib/data/fetcher.dart](lib/data/fetcher.dart)
+- создание диаграммы из полученного списка [lib/data/bpmn_diagram.dart](lib/data/bpmn_diagram.dart)
+  - определение первого элемента
+  - создание map для обращения к элементу диаграммы по индексу: ключ - индекс элемента, значение - сам элемент
+  - создание map для обхода диаграммы: ключ - индекс элемента, значение - список индексов элементов, к которым можно перейти
+- обход диаграммы - функция _traverseDiagram() [lib/ui/my_home_page.dart](lib/ui/my_home_page.dart)
+  - цикл, который продолжается, пока есть элементы, к которым можно перейти от текущего
+  - если таких элементов больше одного, то показываются кнопки для выбора пользователем и происходит ожидание его ответа

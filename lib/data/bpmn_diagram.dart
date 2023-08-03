@@ -1,5 +1,11 @@
 import 'package:bpmn_parse/data/bpmn_element.dart';
 
+//рассматриваем диаграмму как ориентированный граф, вершинами являются
+// все элементы диаграммы (всех типов, даже flowSequence)
+//_startElementId - стартовое событие диаграммы
+//_allElements - все элементы диаграммы (вершины графа)
+//_allNodes - список смежности для этого графа
+
 class BpmnDiagram {
   //id стартового события диаграммы
   String _startElementId = '';
@@ -7,8 +13,6 @@ class BpmnDiagram {
   //все элементы диаграммы
   Map<String, BpmnElement> _allElements = {};
 
-  //рассматриваем диаграмму как ориентированный граф, вершинами являются
-  // все элементы диаграммы (всех типов, даже flowSequence)
   //мапа _allNodes - список смежности для этого графа
   //элемент мапы _allNodes:
   //ключ - индекс элемента диаграммы
@@ -45,7 +49,7 @@ class BpmnDiagram {
         String destinationId = e.properties[1]['value']!;
 
         //если элемент flowSequence, добавляем его
-        //(т.к. он ранее не встречался - как source в flowSequence он не может встретиться)
+        //(т.к. он ранее не встречался - он не может встретиться как source в flowSequence)
         //и добавляем элемент, к которому можно перейти от него
         _allNodes[e.id] = [destinationId];
         //добавляем данный элемент flowSequence как элемент, к которому можно
@@ -56,7 +60,7 @@ class BpmnDiagram {
           ifAbsent: () => [e.id],
         );
       } else {
-        //если элемент не flowSequence, информации о связях элементов в нём нет
+        //если элемент не flowSequence, то информации о связях элементов в нём нет
         //просто добавляем его в мапу, если его там ещё нет
         //(он может там уже быть, если уже встретился как source в flowSequence)
         _allNodes.putIfAbsent(e.id, () => []);

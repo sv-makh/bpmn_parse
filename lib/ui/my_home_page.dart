@@ -1,10 +1,7 @@
 import 'dart:async';
-
 import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:flutter/material.dart';
-
-import '../data/bpmn_element.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -14,16 +11,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late BpmnDiagram diagram;
+  late BpmnDiagram _diagram;
 
-  late String currentElement;
-  late List<String> nextElements;
+  //переменные для обхода диаграммы
+  late String _currentElement;
+  late List<String> _nextElements;
 
-  bool showChoice = false;
+  //показывать ли пользователю кнопки для выбора пути
+  bool _showChoice = false;
 
-  String path = '';
+  //переменная для списка элементов, по которым произошёл обход диаграммы
+  String _path = '';
 
-  late Completer<void>? userChoiceCompleter;
+  //используется для того, чтобы дождаться выбора пользователя, когда
+  //появилась необходимость выбора пути
+  late Completer<void>? _userChoiceCompleter;
 
   @override
   Widget build(BuildContext context) {
@@ -35,24 +37,25 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             TextButton(
               onPressed: () {
-                path = '';
+                _path = '';
                 Fetcher().fetchBpmnElements().then((elements) {
-                  diagram = BpmnDiagram.fromList(elements);
-                  traverseDiagram();
+                  _diagram = BpmnDiagram.fromList(elements);
+                  _traverseDiagram();
                 });
               },
-              child: Text('Download data & traverse diagram'),
+              child: const Text('Download data & traverse diagram'),
             ),
-            Text(path),
+            Text(_path),
             const Spacer(),
-            showChoice ? choiceButtons(nextElements) : Container(),
+            _showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
     );
   }
 
-  Widget choiceButtons(List<String> elements) {
+  //строка кнопок для выбора следующего элемента при обходе диаграммы
+  Widget _choiceButtons(List<String> elements) {
     return Row(
       children: [
         for (var e in elements)
@@ -61,44 +64,51 @@ class _MyHomePageState extends State<MyHomePage> {
             child: TextButton(
               onPressed: () {
                 setState(() {
-                  showChoice = false;
-                  currentElement = e;
+                  _showChoice = false;
+                  _currentElement = e;
                 });
-                userChoiceCompleter?.complete();
-                userChoiceCompleter = null;
+                //пользователь совершил выбор, можно продолжать обход диаграммы
+                _userChoiceCompleter?.complete();
+                _userChoiceCompleter = null;
               },
               child: Text(
-                  diagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
+                  _diagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
             ),
           )
       ],
     );
   }
 
-  Future<void> traverseDiagram() async {
-    var firstElementId = diagram.firstElementId();
-    currentElement = firstElementId;
-    nextElements = diagram.nextElements(id: currentElement);
-    while (nextElements.isNotEmpty) {
+  //обход диаграммы
+  Future<void> _traverseDiagram() async {
+    //устанавливаются начальные значения - элемент, с которого начинается обход
+    // и следующий элемент
+    var firstElementId = _diagram.firstElementId();
+    _currentElement = firstElementId;
+    _nextElements = _diagram.nextElements(id: _currentElement);
+
+    //обход продолжается, пока есть следующие элементы
+    while (_nextElements.isNotEmpty) {
       var currentElementDescr =
-          diagram.getElementById(id: currentElement).toString();
+          _diagram.getElementById(id: _currentElement).toString();
       print(currentElementDescr);
       setState(() {
-        path += '$currentElementDescr\n';
+        _path += '$currentElementDescr\n';
       });
-      nextElements = diagram.nextElements(id: currentElement);
-      if (nextElements.length == 0) {
-        break;
-      } else if (nextElements.length > 1) {
+      _nextElements = _diagram.nextElements(id: _currentElement);
+      //развилка в диаграмме - следующих элементов больше 1
+      if (_nextElements.length > 1) {
         setState(() {
-          showChoice = true;
+          _showChoice = true;
         });
+        //ждём пока пользователь не нажмёт на кнопку выбора
         final completer = Completer<void>();
-        userChoiceCompleter = completer;
+        _userChoiceCompleter = completer;
         await completer.future;
       } else {
-        currentElement = nextElements[0];
+        _currentElement = _nextElements[0];
       }
+      await Future.delayed(const Duration(milliseconds: 500));
     }
   }
 }

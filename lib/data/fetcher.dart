@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:bpmn_parse/data/bpmn_element.dart';
 import 'package:http/http.dart' as http;
 
-import 'constants.dart';
+const String mockDataUri = 'https://mocki.io/v1/42accf9e-86fe-4860-acf0-29144bf2d440';
 
-class Fetcher {
+class Fetcher {  
   Future<List<BpmnElement>> fetchBpmnElements() async {
-    final responce = await http.get(Uri.parse(mockDataUri));
+    final response = await http.get(Uri.parse(mockDataUri));
 
-    if (responce.statusCode == 200) {
-      var elements = jsonDecode(responce.body)['data']['bpmn']['elements'];
+    if (response.statusCode == 200) {
+      var elements = jsonDecode(response.body)['data']['bpmn']['elements'];
       return List<BpmnElement>.from(elements
           .map((data) => BpmnElement.fromJson(data))
           .toList());
