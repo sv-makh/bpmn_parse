@@ -1,7 +1,9 @@
+import 'package:bpmn_parse/di/locator.dart';
 import 'package:bpmn_parse/ui/my_home_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  setUp();
   runApp(const MyApp());
 }
 
