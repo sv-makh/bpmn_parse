@@ -3,6 +3,9 @@ import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:flutter/material.dart';
 
+import '../di/locator.dart';
+import '../stores/bpmn_store.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
@@ -27,6 +30,9 @@ class _MyHomePageState extends State<MyHomePage> {
   //появилась необходимость выбора пути
   late Completer<void>? _userChoiceCompleter;
 
+  final _bpmnStore = getIt.get<BpmnStore>();
+  final _getItDiagram = getIt.get<BpmnDiagram>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,16 +44,21 @@ class _MyHomePageState extends State<MyHomePage> {
             TextButton(
               onPressed: () {
                 _path = '';
-                Fetcher().fetchBpmnElements().then((elements) {
+                _bpmnStore.getElements();
+                _bpmnStore.initializeDiagram();
+                print('elem - ${_bpmnStore.elements.length}');
+                print('1st el - ${_getItDiagram.firstElementId()}');
+/*                Fetcher().fetchBpmnElements().then((elements) {
                   _diagram = BpmnDiagram.fromList(elements);
                   _traverseDiagram();
-                });
+                });*/
+
               },
               child: const Text('Download data & traverse diagram'),
             ),
             Text(_path),
             const Spacer(),
-            _showChoice ? _choiceButtons(_nextElements) : Container(),
+            //_showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
