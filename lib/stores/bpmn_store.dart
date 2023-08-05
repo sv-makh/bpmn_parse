@@ -28,6 +28,9 @@ abstract class _BpmnStore with Store {
     isLoading = true;
     final elementsList = await _fetcher.fetchBpmnElements();
     elements = elementsList;
+    print('fetched ${elements.length} el');
+    getIt.get<BpmnDiagram>().fillFromList(elements);
+    print('1st el - ${getIt.get<BpmnDiagram>().firstElementId()}');
     isLoading = false;
   }
 

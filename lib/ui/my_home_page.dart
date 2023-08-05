@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 
 import '../di/locator.dart';
 import '../stores/bpmn_store.dart';
@@ -45,9 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 _path = '';
                 _bpmnStore.getElements();
-                _bpmnStore.initializeDiagram();
-                print('elem - ${_bpmnStore.elements.length}');
-                print('1st el - ${_getItDiagram.firstElementId()}');
+                //_bpmnStore.initializeDiagram();
+                //print('elem - ${_bpmnStore.elements.length}');
+                //print('1st el - ${_getItDiagram.firstElementId()}');
 /*                Fetcher().fetchBpmnElements().then((elements) {
                   _diagram = BpmnDiagram.fromList(elements);
                   _traverseDiagram();
@@ -56,6 +57,10 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('Download data & traverse diagram'),
             ),
+            Observer(builder: (context) {
+              if (_bpmnStore.isLoading) return const CircularProgressIndicator();
+              return Text('1st el - ${getIt.get<BpmnDiagram>().firstElementId()}');
+            }),
             Text(_path),
             const Spacer(),
             //_showChoice ? _choiceButtons(_nextElements) : Container(),

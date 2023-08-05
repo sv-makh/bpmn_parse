@@ -66,6 +66,39 @@ class BpmnDiagram {
     }
   }
 
+  //обход диаграммы
+  void _traverseDiagram() {
+    //устанавливаются начальные значения - элемент, с которого начинается обход
+    // и следующий элемент
+    var firstElement = firstElementId();
+    var currentElement = firstElement;
+    var nextElementsToGo = nextElements(id: currentElement);
+
+    //обход продолжается, пока есть следующие элементы
+    while (nextElementsToGo.isNotEmpty) {
+      var currentElementDescr =
+      getElementById(id: currentElement).toString();
+      print(currentElementDescr);
+/*      setState(() {
+        _path += '$currentElementDescr\n';
+      });*/
+      nextElementsToGo = nextElements(id: currentElement);
+      //развилка в диаграмме - следующих элементов больше 1
+      if (nextElementsToGo.length > 1) {
+/*        setState(() {
+          _showChoice = true;
+        });*/
+        //ждём пока пользователь не нажмёт на кнопку выбора
+/*        final completer = Completer<void>();
+        _userChoiceCompleter = completer;
+        await completer.future;*/
+      } else {
+        currentElement = nextElementsToGo[0];
+      }
+      //await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
   //заполнение:
   //- первого элемента _startElementId
   //- списка всех элементов диаграммы _allElements
