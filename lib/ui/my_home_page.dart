@@ -11,6 +11,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final Map<String, dynamic> varsStorage = {};
   late BpmnDiagram _diagram;
 
   //переменные для обхода диаграммы

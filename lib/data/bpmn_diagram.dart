@@ -24,7 +24,9 @@ class BpmnDiagram {
     return _allElements[id];
   }
 
-  String firstElementId() { return _startElementId; }
+  String firstElementId() {
+    return _startElementId;
+  }
 
   //получение списка id элементов, к которым можно перейти из заданного элемента
   List<String> nextElements({required String id}) {
@@ -68,4 +70,3 @@ class BpmnDiagram {
     }
   }
 }
-
