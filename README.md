@@ -4,7 +4,7 @@
 
 ## Скриншоты
 
-<img src="assets/before.png" width="200"> <img src="assets/choice.png" width="200"> <img src="assets/after.png" width="200">
+<img src="assets/varsStorage.png" width="300">
 
 ## Работа приложения
 
@@ -29,3 +29,16 @@
 - Map _allNodes - список смежности для этого графа
   - ключ - индекс элемента
   - значение - список индексов элементов, к которым можно перейти
+
+## Иерархия классов элементов
+
+Элементы диаграммы делятся на следующие классы (названия взяты из [https://en.wikipedia.org/wiki/Business_Process_Model_and_Notation#Flow_objects_and_connecting_objects](wiki)):
+- FlowObject [lib/data/flow_objects/flow_object.dart](lib/data/flow_objects/flow_object.dart)
+  - Activity [lib/data/flow_objects/activities/activity.dart](lib/data/flow_objects/activities/activity.dart)
+    - ServiceTask [lib/data/flow_objects/activities/service_task.dart](lib/data/flow_objects/activities/service_task.dart)
+    - UserTask [lib/data/flow_objects/activities/user_task.dart](lib/data/flow_objects/activities/user_task.dart)
+  - Event [lib/data/flow_objects/events/event.dart](lib/data/flow_objects/events/event.dart)
+    - StartEvent [lib/data/flow_objects/events/start_event.dart](lib/data/flow_objects/events/start_event.dart)
+    - EndEvent [lib/data/flow_objects/events/end_event.dart](lib/data/flow_objects/events/end_event.dart)
+  - Gateway [lib/data/flow_objects/events/gateway.dart](lib/data/flow_objects/events/gateway.dart)
+    - ExclusiveGateway [lib/data/flow_objects/events/exclusive_gateway.dart](lib/data/flow_objects/events/exclusive_gateway.dart)

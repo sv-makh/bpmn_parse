@@ -1,7 +1,18 @@
 import 'dart:async';
-import 'package:bpmn_parse/data/bpmn_diagram.dart';
-import 'package:bpmn_parse/data/fetcher.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:bpmn_parse/data/bpmn_diagram.dart';
+import 'package:bpmn_parse/data/bpmn_element.dart';
+import 'package:bpmn_parse/data/fetcher.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/activity.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/service_task.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/user_task.dart';
+import 'package:bpmn_parse/data/flow_objects/events/end_event.dart';
+import 'package:bpmn_parse/data/flow_objects/events/event.dart';
+import 'package:bpmn_parse/data/flow_objects/events/start_event.dart';
+import 'package:bpmn_parse/data/flow_objects/flow_object.dart';
+import 'package:bpmn_parse/data/flow_objects/gateways/exclusive_gateway.dart';
+import 'package:bpmn_parse/data/flow_objects/gateways/gateway.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -11,6 +22,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final Map<String, dynamic> varsStorage = {};
+
   late BpmnDiagram _diagram;
 
   //переменные для обхода диаграммы
@@ -89,12 +102,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
     //обход продолжается, пока есть следующие элементы
     while (_nextElements.isNotEmpty) {
-      var currentElementDescr =
-          _diagram.getElementById(id: _currentElement).toString();
-      print(currentElementDescr);
+      //выбрать тип текущего элемента диаграммы
+      FlowObject? currentObject = _classifyElement(_currentElement);
+      //и выполнить соответствующее действие
+      if (currentObject != null ) _executeFlowObject(currentObject);
+
+      print(_diagram.getElementById(id: _currentElement).toString());
       setState(() {
-        _path += '$currentElementDescr\n';
+        _path = currentObject != null ? currentObject.toString() : '';
       });
+
       _nextElements = _diagram.nextElements(id: _currentElement);
       //развилка в диаграмме - следующих элементов больше 1
       if (_nextElements.length > 1) {
@@ -105,10 +122,40 @@ class _MyHomePageState extends State<MyHomePage> {
         final completer = Completer<void>();
         _userChoiceCompleter = completer;
         await completer.future;
-      } else {
+      } else if (_nextElements.isNotEmpty) {
         _currentElement = _nextElements[0];
       }
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 100));
     }
+
+    String result = '';
+    varsStorage.forEach((key, value) {result += '$key : $value\n'; });
+    setState(() {
+      _path = result;
+    });
+  }
+
+  FlowObject? _classifyElement(String elementId) {
+    BpmnElement element = _diagram.getElementById(id: elementId)!;
+    switch (element.type) {
+      case 'startEvent':
+        return StartEvent(elementId);
+      case 'endEvent':
+        return EndEvent(elementId);
+      case 'serviceTask':
+        return ServiceTask(elementId, element.metaName!);
+      case 'userTask':
+        return UserTask(elementId, element.metaName!);
+      case 'exclusiveGateway':
+        return ExclusiveGateway(elementId);
+      default: //объекты типа 'flowSequence' не являются FlowObject
+        return null;
+    }
+  }
+
+  void _executeFlowObject(FlowObject obj) {
+    if (obj is Activity) { obj.execute(varsStorage); }
+    else if (obj is Event) { obj.process(varsStorage); }
+    else if (obj is Gateway) { obj.pass(varsStorage); }
   }
 }
