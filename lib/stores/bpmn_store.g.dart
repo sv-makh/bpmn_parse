@@ -41,6 +41,86 @@ mixin _$BpmnStore on _BpmnStore, Store {
     });
   }
 
+  late final _$isLoadedAtom =
+      Atom(name: '_BpmnStore.isLoaded', context: context);
+
+  @override
+  bool get isLoaded {
+    _$isLoadedAtom.reportRead();
+    return super.isLoaded;
+  }
+
+  @override
+  set isLoaded(bool value) {
+    _$isLoadedAtom.reportWrite(value, super.isLoaded, () {
+      super.isLoaded = value;
+    });
+  }
+
+  late final _$userChoiceCompleterAtom =
+      Atom(name: '_BpmnStore.userChoiceCompleter', context: context);
+
+  @override
+  Completer<void>? get userChoiceCompleter {
+    _$userChoiceCompleterAtom.reportRead();
+    return super.userChoiceCompleter;
+  }
+
+  @override
+  set userChoiceCompleter(Completer<void>? value) {
+    _$userChoiceCompleterAtom.reportWrite(value, super.userChoiceCompleter, () {
+      super.userChoiceCompleter = value;
+    });
+  }
+
+  late final _$showChoiceAtom =
+      Atom(name: '_BpmnStore.showChoice', context: context);
+
+  @override
+  bool get showChoice {
+    _$showChoiceAtom.reportRead();
+    return super.showChoice;
+  }
+
+  @override
+  set showChoice(bool value) {
+    _$showChoiceAtom.reportWrite(value, super.showChoice, () {
+      super.showChoice = value;
+    });
+  }
+
+  late final _$nextElementsAtom =
+      Atom(name: '_BpmnStore.nextElements', context: context);
+
+  @override
+  List<String> get nextElements {
+    _$nextElementsAtom.reportRead();
+    return super.nextElements;
+  }
+
+  @override
+  set nextElements(List<String> value) {
+    _$nextElementsAtom.reportWrite(value, super.nextElements, () {
+      super.nextElements = value;
+    });
+  }
+
+  late final _$chosenElementAtom =
+      Atom(name: '_BpmnStore.chosenElement', context: context);
+
+  @override
+  String get chosenElement {
+    _$chosenElementAtom.reportRead();
+    return super.chosenElement;
+  }
+
+  @override
+  set chosenElement(String value) {
+    _$chosenElementAtom.reportWrite(value, super.chosenElement, () {
+      super.chosenElement = value;
+    });
+  }
+
   late final _$getElementsAsyncAction =
       AsyncAction('_BpmnStore.getElements', context: context);
 
@@ -49,11 +129,30 @@ mixin _$BpmnStore on _BpmnStore, Store {
     return _$getElementsAsyncAction.run(() => super.getElements());
   }
 
+  late final _$_BpmnStoreActionController =
+      ActionController(name: '_BpmnStore', context: context);
+
+  @override
+  void initializeDiagram() {
+    final _$actionInfo = _$_BpmnStoreActionController.startAction(
+        name: '_BpmnStore.initializeDiagram');
+    try {
+      return super.initializeDiagram();
+    } finally {
+      _$_BpmnStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
   @override
   String toString() {
     return '''
 elements: ${elements},
-isLoading: ${isLoading}
+isLoading: ${isLoading},
+isLoaded: ${isLoaded},
+userChoiceCompleter: ${userChoiceCompleter},
+showChoice: ${showChoice},
+nextElements: ${nextElements},
+chosenElement: ${chosenElement}
     ''';
   }
 }

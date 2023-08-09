@@ -3,6 +3,7 @@ import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
 
 import '../di/locator.dart';
 import '../stores/bpmn_store.dart';
@@ -34,6 +35,14 @@ class _MyHomePageState extends State<MyHomePage> {
   final _bpmnStore = getIt.get<BpmnStore>();
   final _getItDiagram = getIt.get<BpmnDiagram>();
 
+  late ReactionDisposer _disposer;
+
+  @override
+  void dispose() {
+    _disposer();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 _path = '';
                 _bpmnStore.getElements();
+                _disposer = when((_) => _bpmnStore.isLoaded, () {
+                  _getItDiagram.traverseDiagram();
+                },);
                 //_bpmnStore.initializeDiagram();
                 //print('elem - ${_bpmnStore.elements.length}');
                 //print('1st el - ${_getItDiagram.firstElementId()}');
@@ -59,11 +71,16 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Observer(builder: (context) {
               if (_bpmnStore.isLoading) return const CircularProgressIndicator();
-              return Text('1st el - ${getIt.get<BpmnDiagram>().firstElementId()}');
+              return Text('1st el - ${_getItDiagram.firstElementId()}');
             }),
             Text(_path),
             const Spacer(),
             //_showChoice ? _choiceButtons(_nextElements) : Container(),
+            Observer(builder: (context) {
+              if (_bpmnStore.showChoice) return _choiceButtons(_bpmnStore.nextElements);
+              return Container();
+            }),
+            //_bpmnStore.showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
@@ -79,16 +96,24 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextButton(
               onPressed: () {
-                setState(() {
-                  _showChoice = false;
-                  _currentElement = e;
-                });
+                //setState(() {
+                  //_showChoice = false;
+                  //_bpmnStore.showChoice = false;
+                  //_bpmnStore.nextElements.clear();
+                  //_currentElement = e;
+                //});
+                _bpmnStore.showChoice = false;
+                //_bpmnStore.nextElements.clear();
+                _bpmnStore.chosenElement = e;
+
                 //пользователь совершил выбор, можно продолжать обход диаграммы
-                _userChoiceCompleter?.complete();
-                _userChoiceCompleter = null;
+                _bpmnStore.userChoiceCompleter?.complete();
+                //_bpmnStore.userChoiceCompleter = null;
+                //_userChoiceCompleter?.complete();
+                //_userChoiceCompleter = null;
               },
               child: Text(
-                  _diagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
+                  _getItDiagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
             ),
           )
       ],

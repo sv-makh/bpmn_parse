@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bpmn_parse/data/bpmn_diagram.dart';
 import 'package:bpmn_parse/data/fetcher.dart';
 import 'package:mobx/mobx.dart';
@@ -23,6 +25,21 @@ abstract class _BpmnStore with Store {
   @observable
   bool isLoading = false;
 
+  @observable
+  bool isLoaded = false;
+
+  @observable
+  Completer<void>? userChoiceCompleter;
+
+  @observable
+  bool showChoice = false;
+
+  @observable
+  List<String> nextElements = [];
+
+  @observable
+  String chosenElement = '';
+
   @action
   Future getElements() async {
     isLoading = true;
@@ -32,6 +49,7 @@ abstract class _BpmnStore with Store {
     getIt.get<BpmnDiagram>().fillFromList(elements);
     print('1st el - ${getIt.get<BpmnDiagram>().firstElementId()}');
     isLoading = false;
+    isLoaded = true;
   }
 
   @action

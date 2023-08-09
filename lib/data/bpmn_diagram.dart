@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:bpmn_parse/data/bpmn_element.dart';
+
+import '../di/locator.dart';
+import '../stores/bpmn_store.dart';
 
 //рассматриваем диаграмму как ориентированный граф, вершинами являются
 // все элементы диаграммы (всех типов, даже flowSequence)
@@ -67,7 +72,7 @@ class BpmnDiagram {
   }
 
   //обход диаграммы
-  void _traverseDiagram() {
+  void traverseDiagram() async {
     //устанавливаются начальные значения - элемент, с которого начинается обход
     // и следующий элемент
     var firstElement = firstElementId();
@@ -75,6 +80,7 @@ class BpmnDiagram {
     var nextElementsToGo = nextElements(id: currentElement);
 
     //обход продолжается, пока есть следующие элементы
+    //while (nextElementsToGo.length <= 1) {
     while (nextElementsToGo.isNotEmpty) {
       var currentElementDescr =
       getElementById(id: currentElement).toString();
@@ -83,6 +89,7 @@ class BpmnDiagram {
         _path += '$currentElementDescr\n';
       });*/
       nextElementsToGo = nextElements(id: currentElement);
+      print(nextElementsToGo);
       //развилка в диаграмме - следующих элементов больше 1
       if (nextElementsToGo.length > 1) {
 /*        setState(() {
@@ -92,9 +99,23 @@ class BpmnDiagram {
 /*        final completer = Completer<void>();
         _userChoiceCompleter = completer;
         await completer.future;*/
-      } else {
+        getIt.get<BpmnStore>().nextElements = nextElementsToGo;
+        getIt.get<BpmnStore>().showChoice = true;
+        print(getIt.get<BpmnStore>().showChoice);
+
+        final completer = Completer<void>();
+        getIt.get<BpmnStore>().userChoiceCompleter = completer;
+        await completer.future;
+        print('completer finished');
+
+        currentElement = getIt.get<BpmnStore>().chosenElement;
+        print('currentElement = ${getElementById(id: currentElement).toString()}');
+        //currentElement = nextElementsToGo[0];
+      } else if (nextElementsToGo.isNotEmpty) {
+        print('else if');
         currentElement = nextElementsToGo[0];
       }
+      print('after else if ${nextElementsToGo.length}');
       //await Future.delayed(const Duration(milliseconds: 500));
     }
   }
