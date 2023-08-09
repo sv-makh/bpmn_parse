@@ -38,6 +38,12 @@ abstract class _BpmnStore with Store {
   @observable
   String chosenElement = '';
 
+  @observable
+  Map<String, dynamic> varsStorage = {};
+
+  @observable
+  String path = '';
+
   @action
   Future getElements() async {
     _resetStore();
@@ -56,6 +62,7 @@ abstract class _BpmnStore with Store {
     userChoiceCompleter = null;
     nextElements.clear();
     elements.clear();
+    varsStorage.clear();
     getIt.get<BpmnDiagram>().clear();
   }
 }

@@ -4,6 +4,15 @@ import 'package:bpmn_parse/data/bpmn_element.dart';
 
 import '../di/locator.dart';
 import '../stores/bpmn_store.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/activity.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/service_task.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/user_task.dart';
+import 'package:bpmn_parse/data/flow_objects/events/end_event.dart';
+import 'package:bpmn_parse/data/flow_objects/events/event.dart';
+import 'package:bpmn_parse/data/flow_objects/events/start_event.dart';
+import 'package:bpmn_parse/data/flow_objects/flow_object.dart';
+import 'package:bpmn_parse/data/flow_objects/gateways/exclusive_gateway.dart';
+import 'package:bpmn_parse/data/flow_objects/gateways/gateway.dart';
 
 //рассматриваем диаграмму как ориентированный граф, вершинами являются
 // все элементы диаграммы (всех типов, даже flowSequence)
@@ -37,7 +46,9 @@ class BpmnDiagram {
     return _allElements[id];
   }
 
-  String firstElementId() { return _startElementId; }
+  String firstElementId() {
+    return _startElementId;
+  }
 
   //получение списка id элементов, к которым можно перейти из заданного элемента
   List<String> nextElements({required String id}) {
@@ -91,9 +102,17 @@ class BpmnDiagram {
 
     //обход продолжается, пока есть следующие элементы
     while (nextElementsToGo.isNotEmpty) {
-      var currentElementDescr =
-      getElementById(id: currentElement).toString();
+      //выбрать тип текущего элемента диаграммы
+      FlowObject? currentObject = _classifyElement(currentElement);
+      //и выполнить соответствующее действие
+      if (currentObject != null) _executeFlowObject(currentObject);
+
+      var currentElementDescr = getElementById(id: currentElement).toString();
       print(currentElementDescr);
+
+      getIt.get<BpmnStore>().path =
+          currentObject != null ? currentObject.toString() : '';
+
       nextElementsToGo = nextElements(id: currentElement);
       //развилка в диаграмме - следующих элементов больше 1
       if (nextElementsToGo.length > 1) {
@@ -113,6 +132,44 @@ class BpmnDiagram {
       }
       await Future.delayed(const Duration(milliseconds: 100));
     }
+
+    _fillPath();
+  }
+
+  FlowObject? _classifyElement(String elementId) {
+    BpmnElement element = getElementById(id: elementId)!;
+    switch (element.type) {
+      case 'startEvent':
+        return StartEvent(elementId);
+      case 'endEvent':
+        return EndEvent(elementId);
+      case 'serviceTask':
+        return ServiceTask(elementId, element.metaName!);
+      case 'userTask':
+        return UserTask(elementId, element.metaName!);
+      case 'exclusiveGateway':
+        return ExclusiveGateway(elementId);
+      default: //объекты типа 'flowSequence' не являются FlowObject
+        return null;
+    }
+  }
+
+  void _executeFlowObject(FlowObject obj) {
+    var varsStorage = getIt.get<BpmnStore>().varsStorage;
+    if (obj is Activity) {
+      obj.execute(varsStorage);
+    } else if (obj is Event) {
+      obj.process(varsStorage);
+    } else if (obj is Gateway) {
+      obj.pass(varsStorage);
+    }
+  }
+
+  void _fillPath() {
+    String result = '';
+    getIt.get<BpmnStore>().varsStorage.forEach((key, value) {
+      result += '$key : $value\n';
+    });
+    getIt.get<BpmnStore>().path = result;
   }
 }
-

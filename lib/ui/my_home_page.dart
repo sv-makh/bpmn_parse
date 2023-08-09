@@ -13,6 +13,11 @@ import 'package:bpmn_parse/data/flow_objects/events/start_event.dart';
 import 'package:bpmn_parse/data/flow_objects/flow_object.dart';
 import 'package:bpmn_parse/data/flow_objects/gateways/exclusive_gateway.dart';
 import 'package:bpmn_parse/data/flow_objects/gateways/gateway.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
+
+import '../di/locator.dart';
+import '../stores/bpmn_store.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -36,6 +41,17 @@ class _MyHomePageState extends State<MyHomePage> {
   //переменная для списка элементов, по которым произошёл обход диаграммы
   String _path = '';
 
+  final _bpmnStore = getIt.get<BpmnStore>();
+  final _getItDiagram = getIt.get<BpmnDiagram>();
+
+  late ReactionDisposer _disposer;
+
+  @override
+  void dispose() {
+    _disposer();
+    super.dispose();
+  }
+
   //используется для того, чтобы дождаться выбора пользователя, когда
   //появилась необходимость выбора пути
   late Completer<void>? _userChoiceCompleter;
@@ -51,16 +67,37 @@ class _MyHomePageState extends State<MyHomePage> {
             TextButton(
               onPressed: () {
                 _path = '';
-                Fetcher().fetchBpmnElements().then((elements) {
+                _bpmnStore.getElements();
+
+                //запуск reaction для обхода диаграммы
+                _disposer = when(
+                  (_) => _bpmnStore.isLoaded,
+                  () {
+                    _getItDiagram.traverseDiagram();
+                  },
+                );
+
+/*                Fetcher().fetchBpmnElements().then((elements) {
                   _diagram = BpmnDiagram.fromList(elements);
                   _traverseDiagram();
-                });
+                });*/
               },
               child: const Text('Download data & traverse diagram'),
             ),
+            Observer(builder: (context) {
+              if (_bpmnStore.isLoading)
+                return const CircularProgressIndicator();
+              return Text(_bpmnStore.path);
+            }),
             Text(_path),
             const Spacer(),
-            _showChoice ? _choiceButtons(_nextElements) : Container(),
+            Observer(builder: (context) {
+              if (_bpmnStore.showChoice) {
+                return _choiceButtons(_bpmnStore.nextElements);
+              }
+              return Container();
+            }),
+            //_showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
@@ -76,16 +113,22 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextButton(
               onPressed: () {
-                setState(() {
+/*                setState(() {
                   _showChoice = false;
                   _currentElement = e;
                 });
                 //пользователь совершил выбор, можно продолжать обход диаграммы
                 _userChoiceCompleter?.complete();
-                _userChoiceCompleter = null;
+                _userChoiceCompleter = null;*/
+
+                _bpmnStore.showChoice = false;
+                _bpmnStore.chosenElement = e;
+
+                //пользователь совершил выбор, можно продолжать обход диаграммы
+                _bpmnStore.userChoiceCompleter?.complete();
               },
               child: Text(
-                  _diagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
+                  _getItDiagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
             ),
           )
       ],
@@ -93,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //обход диаграммы
-  Future<void> _traverseDiagram() async {
+/*  Future<void> _traverseDiagram() async {
     //устанавливаются начальные значения - элемент, с которого начинается обход
     // и следующий элемент
     var firstElementId = _diagram.firstElementId();
@@ -105,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //выбрать тип текущего элемента диаграммы
       FlowObject? currentObject = _classifyElement(_currentElement);
       //и выполнить соответствующее действие
-      if (currentObject != null ) _executeFlowObject(currentObject);
+      if (currentObject != null) _executeFlowObject(currentObject);
 
       print(_diagram.getElementById(id: _currentElement).toString());
       setState(() {
@@ -129,13 +172,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     String result = '';
-    varsStorage.forEach((key, value) {result += '$key : $value\n'; });
+    varsStorage.forEach((key, value) {
+      result += '$key : $value\n';
+    });
     setState(() {
       _path = result;
     });
-  }
+  }*/
 
-  FlowObject? _classifyElement(String elementId) {
+/*  FlowObject? _classifyElement(String elementId) {
     BpmnElement element = _diagram.getElementById(id: elementId)!;
     switch (element.type) {
       case 'startEvent':
@@ -154,8 +199,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _executeFlowObject(FlowObject obj) {
-    if (obj is Activity) { obj.execute(varsStorage); }
-    else if (obj is Event) { obj.process(varsStorage); }
-    else if (obj is Gateway) { obj.pass(varsStorage); }
-  }
+    if (obj is Activity) {
+      obj.execute(varsStorage);
+    } else if (obj is Event) {
+      obj.process(varsStorage);
+    } else if (obj is Gateway) {
+      obj.pass(varsStorage);
+    }
+  }*/
 }

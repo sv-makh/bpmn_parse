@@ -121,6 +121,37 @@ mixin _$BpmnStore on _BpmnStore, Store {
     });
   }
 
+  late final _$varsStorageAtom =
+      Atom(name: '_BpmnStore.varsStorage', context: context);
+
+  @override
+  Map<String, dynamic> get varsStorage {
+    _$varsStorageAtom.reportRead();
+    return super.varsStorage;
+  }
+
+  @override
+  set varsStorage(Map<String, dynamic> value) {
+    _$varsStorageAtom.reportWrite(value, super.varsStorage, () {
+      super.varsStorage = value;
+    });
+  }
+
+  late final _$pathAtom = Atom(name: '_BpmnStore.path', context: context);
+
+  @override
+  String get path {
+    _$pathAtom.reportRead();
+    return super.path;
+  }
+
+  @override
+  set path(String value) {
+    _$pathAtom.reportWrite(value, super.path, () {
+      super.path = value;
+    });
+  }
+
   late final _$getElementsAsyncAction =
       AsyncAction('_BpmnStore.getElements', context: context);
 
@@ -138,7 +169,9 @@ isLoaded: ${isLoaded},
 userChoiceCompleter: ${userChoiceCompleter},
 showChoice: ${showChoice},
 nextElements: ${nextElements},
-chosenElement: ${chosenElement}
+chosenElement: ${chosenElement},
+varsStorage: ${varsStorage},
+path: ${path}
     ''';
   }
 }
