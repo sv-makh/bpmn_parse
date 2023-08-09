@@ -129,20 +129,6 @@ mixin _$BpmnStore on _BpmnStore, Store {
     return _$getElementsAsyncAction.run(() => super.getElements());
   }
 
-  late final _$_BpmnStoreActionController =
-      ActionController(name: '_BpmnStore', context: context);
-
-  @override
-  void initializeDiagram() {
-    final _$actionInfo = _$_BpmnStoreActionController.startAction(
-        name: '_BpmnStore.initializeDiagram');
-    try {
-      return super.initializeDiagram();
-    } finally {
-      _$_BpmnStoreActionController.endAction(_$actionInfo);
-    }
-  }
-
   @override
   String toString() {
     return '''

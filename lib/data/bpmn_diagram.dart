@@ -27,6 +27,12 @@ class BpmnDiagram {
   // в которые можно перейти из данного элемента
   Map<String, List<String>> _allNodes = {};
 
+  void clear() {
+    _startElementId = '';
+    _allElements.clear();
+    _allNodes.clear();
+  }
+
   BpmnElement? getElementById({required String id}) {
     return _allElements[id];
   }
@@ -80,43 +86,28 @@ class BpmnDiagram {
     var nextElementsToGo = nextElements(id: currentElement);
 
     //обход продолжается, пока есть следующие элементы
-    //while (nextElementsToGo.length <= 1) {
     while (nextElementsToGo.isNotEmpty) {
       var currentElementDescr =
       getElementById(id: currentElement).toString();
       print(currentElementDescr);
-/*      setState(() {
-        _path += '$currentElementDescr\n';
-      });*/
       nextElementsToGo = nextElements(id: currentElement);
-      print(nextElementsToGo);
       //развилка в диаграмме - следующих элементов больше 1
       if (nextElementsToGo.length > 1) {
-/*        setState(() {
-          _showChoice = true;
-        });*/
-        //ждём пока пользователь не нажмёт на кнопку выбора
-/*        final completer = Completer<void>();
-        _userChoiceCompleter = completer;
-        await completer.future;*/
+        //устанавливаем элементы, условия из которых будут показываться на кнопках
         getIt.get<BpmnStore>().nextElements = nextElementsToGo;
+        //условие для показа кнопок
         getIt.get<BpmnStore>().showChoice = true;
-        print(getIt.get<BpmnStore>().showChoice);
 
+        //ждём пока пользователь не нажмёт на кнопку выбора
         final completer = Completer<void>();
         getIt.get<BpmnStore>().userChoiceCompleter = completer;
         await completer.future;
-        print('completer finished');
 
         currentElement = getIt.get<BpmnStore>().chosenElement;
-        print('currentElement = ${getElementById(id: currentElement).toString()}');
-        //currentElement = nextElementsToGo[0];
       } else if (nextElementsToGo.isNotEmpty) {
-        print('else if');
         currentElement = nextElementsToGo[0];
       }
-      print('after else if ${nextElementsToGo.length}');
-      //await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 100));
     }
   }
 

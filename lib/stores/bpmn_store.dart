@@ -12,12 +12,10 @@ part 'bpmn_store.g.dart';
 class BpmnStore = _BpmnStore with _$BpmnStore;
 
 abstract class _BpmnStore with Store {
-  _BpmnStore(Fetcher fetcher)//, BpmnDiagram diagram)
-      : _fetcher = fetcher;//,
-        //_diagram = diagram;
+  _BpmnStore(Fetcher fetcher)
+      : _fetcher = fetcher;
 
   late final Fetcher _fetcher;
-  //late final BpmnDiagram _diagram;
 
   @observable
   List<BpmnElement> elements = [];
@@ -42,19 +40,22 @@ abstract class _BpmnStore with Store {
 
   @action
   Future getElements() async {
+    _resetStore();
     isLoading = true;
     final elementsList = await _fetcher.fetchBpmnElements();
     elements = elementsList;
-    print('fetched ${elements.length} el');
     getIt.get<BpmnDiagram>().fillFromList(elements);
-    print('1st el - ${getIt.get<BpmnDiagram>().firstElementId()}');
     isLoading = false;
     isLoaded = true;
   }
 
-  @action
-  void initializeDiagram() {
-    getIt.get<BpmnDiagram>().fillFromList(elements);
-    //_diagram = BpmnDiagram.fromList(elements);
+  void _resetStore() {
+    isLoaded = false;
+    nextElements.clear();
+    showChoice = false;
+    userChoiceCompleter = null;
+    nextElements.clear();
+    elements.clear();
+    getIt.get<BpmnDiagram>().clear();
   }
 }

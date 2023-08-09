@@ -16,21 +16,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late BpmnDiagram _diagram;
-
-  //переменные для обхода диаграммы
-  late String _currentElement;
-  late List<String> _nextElements;
-
-  //показывать ли пользователю кнопки для выбора пути
-  bool _showChoice = false;
 
   //переменная для списка элементов, по которым произошёл обход диаграммы
   String _path = '';
-
-  //используется для того, чтобы дождаться выбора пользователя, когда
-  //появилась необходимость выбора пути
-  late Completer<void>? _userChoiceCompleter;
 
   final _bpmnStore = getIt.get<BpmnStore>();
   final _getItDiagram = getIt.get<BpmnDiagram>();
@@ -55,32 +43,29 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 _path = '';
                 _bpmnStore.getElements();
-                _disposer = when((_) => _bpmnStore.isLoaded, () {
-                  _getItDiagram.traverseDiagram();
-                },);
-                //_bpmnStore.initializeDiagram();
-                //print('elem - ${_bpmnStore.elements.length}');
-                //print('1st el - ${_getItDiagram.firstElementId()}');
-/*                Fetcher().fetchBpmnElements().then((elements) {
-                  _diagram = BpmnDiagram.fromList(elements);
-                  _traverseDiagram();
-                });*/
 
+                //запуск reaction для обхода диаграммы
+                _disposer = when(
+                  (_) => _bpmnStore.isLoaded,
+                  () {
+                    _getItDiagram.traverseDiagram();
+                  },
+                );
               },
               child: const Text('Download data & traverse diagram'),
             ),
             Observer(builder: (context) {
-              if (_bpmnStore.isLoading) return const CircularProgressIndicator();
-              return Text('1st el - ${_getItDiagram.firstElementId()}');
+              if (_bpmnStore.isLoading)
+                return const CircularProgressIndicator();
+              return Container();
             }),
             Text(_path),
             const Spacer(),
-            //_showChoice ? _choiceButtons(_nextElements) : Container(),
             Observer(builder: (context) {
-              if (_bpmnStore.showChoice) return _choiceButtons(_bpmnStore.nextElements);
+              if (_bpmnStore.showChoice) {
+                return _choiceButtons(_bpmnStore.nextElements); }
               return Container();
             }),
-            //_bpmnStore.showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
@@ -96,60 +81,17 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextButton(
               onPressed: () {
-                //setState(() {
-                  //_showChoice = false;
-                  //_bpmnStore.showChoice = false;
-                  //_bpmnStore.nextElements.clear();
-                  //_currentElement = e;
-                //});
                 _bpmnStore.showChoice = false;
-                //_bpmnStore.nextElements.clear();
                 _bpmnStore.chosenElement = e;
 
                 //пользователь совершил выбор, можно продолжать обход диаграммы
                 _bpmnStore.userChoiceCompleter?.complete();
-                //_bpmnStore.userChoiceCompleter = null;
-                //_userChoiceCompleter?.complete();
-                //_userChoiceCompleter = null;
               },
-              child: Text(
-                  _getItDiagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
+              child: Text( _getItDiagram.getElementById(id: e)!.properties[2]
+                      ['value'] ?? ''),
             ),
           )
       ],
     );
-  }
-
-  //обход диаграммы
-  Future<void> _traverseDiagram() async {
-    //устанавливаются начальные значения - элемент, с которого начинается обход
-    // и следующий элемент
-    var firstElementId = _diagram.firstElementId();
-    _currentElement = firstElementId;
-    _nextElements = _diagram.nextElements(id: _currentElement);
-
-    //обход продолжается, пока есть следующие элементы
-    while (_nextElements.isNotEmpty) {
-      var currentElementDescr =
-          _diagram.getElementById(id: _currentElement).toString();
-      print(currentElementDescr);
-      setState(() {
-        _path += '$currentElementDescr\n';
-      });
-      _nextElements = _diagram.nextElements(id: _currentElement);
-      //развилка в диаграмме - следующих элементов больше 1
-      if (_nextElements.length > 1) {
-        setState(() {
-          _showChoice = true;
-        });
-        //ждём пока пользователь не нажмёт на кнопку выбора
-        final completer = Completer<void>();
-        _userChoiceCompleter = completer;
-        await completer.future;
-      } else {
-        _currentElement = _nextElements[0];
-      }
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
   }
 }
