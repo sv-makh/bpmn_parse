@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bpmn_parse/data/bpmn_element.dart';
-
 import '../di/locator.dart';
 import '../stores/bpmn_store.dart';
 import 'package:bpmn_parse/data/flow_objects/activities/activity.dart';

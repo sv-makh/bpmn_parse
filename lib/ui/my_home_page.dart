@@ -27,19 +27,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Map<String, dynamic> varsStorage = {};
-
-  late BpmnDiagram _diagram;
-
-  //переменные для обхода диаграммы
-  late String _currentElement;
-  late List<String> _nextElements;
-
-  //показывать ли пользователю кнопки для выбора пути
-  bool _showChoice = false;
-
-  //переменная для списка элементов, по которым произошёл обход диаграммы
-  String _path = '';
 
   final _bpmnStore = getIt.get<BpmnStore>();
   final _getItDiagram = getIt.get<BpmnDiagram>();
@@ -52,10 +39,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  //используется для того, чтобы дождаться выбора пользователя, когда
-  //появилась необходимость выбора пути
-  late Completer<void>? _userChoiceCompleter;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +49,6 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             TextButton(
               onPressed: () {
-                _path = '';
                 _bpmnStore.getElements();
 
                 //запуск reaction для обхода диаграммы
@@ -76,11 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     _getItDiagram.traverseDiagram();
                   },
                 );
-
-/*                Fetcher().fetchBpmnElements().then((elements) {
-                  _diagram = BpmnDiagram.fromList(elements);
-                  _traverseDiagram();
-                });*/
               },
               child: const Text('Download data & traverse diagram'),
             ),
@@ -89,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 return const CircularProgressIndicator();
               return Text(_bpmnStore.path);
             }),
-            Text(_path),
             const Spacer(),
             Observer(builder: (context) {
               if (_bpmnStore.showChoice) {
@@ -97,7 +73,6 @@ class _MyHomePageState extends State<MyHomePage> {
               }
               return Container();
             }),
-            //_showChoice ? _choiceButtons(_nextElements) : Container(),
           ],
         ),
       ),
@@ -113,13 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextButton(
               onPressed: () {
-/*                setState(() {
-                  _showChoice = false;
-                  _currentElement = e;
-                });
-                //пользователь совершил выбор, можно продолжать обход диаграммы
-                _userChoiceCompleter?.complete();
-                _userChoiceCompleter = null;*/
 
                 _bpmnStore.showChoice = false;
                 _bpmnStore.chosenElement = e;
@@ -134,77 +102,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
   }
-
-  //обход диаграммы
-/*  Future<void> _traverseDiagram() async {
-    //устанавливаются начальные значения - элемент, с которого начинается обход
-    // и следующий элемент
-    var firstElementId = _diagram.firstElementId();
-    _currentElement = firstElementId;
-    _nextElements = _diagram.nextElements(id: _currentElement);
-
-    //обход продолжается, пока есть следующие элементы
-    while (_nextElements.isNotEmpty) {
-      //выбрать тип текущего элемента диаграммы
-      FlowObject? currentObject = _classifyElement(_currentElement);
-      //и выполнить соответствующее действие
-      if (currentObject != null) _executeFlowObject(currentObject);
-
-      print(_diagram.getElementById(id: _currentElement).toString());
-      setState(() {
-        _path = currentObject != null ? currentObject.toString() : '';
-      });
-
-      _nextElements = _diagram.nextElements(id: _currentElement);
-      //развилка в диаграмме - следующих элементов больше 1
-      if (_nextElements.length > 1) {
-        setState(() {
-          _showChoice = true;
-        });
-        //ждём пока пользователь не нажмёт на кнопку выбора
-        final completer = Completer<void>();
-        _userChoiceCompleter = completer;
-        await completer.future;
-      } else if (_nextElements.isNotEmpty) {
-        _currentElement = _nextElements[0];
-      }
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-
-    String result = '';
-    varsStorage.forEach((key, value) {
-      result += '$key : $value\n';
-    });
-    setState(() {
-      _path = result;
-    });
-  }*/
-
-/*  FlowObject? _classifyElement(String elementId) {
-    BpmnElement element = _diagram.getElementById(id: elementId)!;
-    switch (element.type) {
-      case 'startEvent':
-        return StartEvent(elementId);
-      case 'endEvent':
-        return EndEvent(elementId);
-      case 'serviceTask':
-        return ServiceTask(elementId, element.metaName!);
-      case 'userTask':
-        return UserTask(elementId, element.metaName!);
-      case 'exclusiveGateway':
-        return ExclusiveGateway(elementId);
-      default: //объекты типа 'flowSequence' не являются FlowObject
-        return null;
-    }
-  }
-
-  void _executeFlowObject(FlowObject obj) {
-    if (obj is Activity) {
-      obj.execute(varsStorage);
-    } else if (obj is Event) {
-      obj.process(varsStorage);
-    } else if (obj is Gateway) {
-      obj.pass(varsStorage);
-    }
-  }*/
 }
