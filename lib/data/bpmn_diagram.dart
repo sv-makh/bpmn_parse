@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:bpmn_parse/data/bpmn_element.dart';
+
+import '../di/locator.dart';
+import '../stores/bpmn_store.dart';
 
 //рассматриваем диаграмму как ориентированный граф, вершинами являются
 // все элементы диаграммы (всех типов, даже flowSequence)
@@ -7,6 +12,8 @@ import 'package:bpmn_parse/data/bpmn_element.dart';
 //_allNodes - список смежности для этого графа
 
 class BpmnDiagram {
+  BpmnDiagram();
+
   //id стартового события диаграммы
   String _startElementId = '';
 
@@ -19,6 +26,12 @@ class BpmnDiagram {
   //значение - список индексов элементов диаграммы,
   // в которые можно перейти из данного элемента
   Map<String, List<String>> _allNodes = {};
+
+  void clear() {
+    _startElementId = '';
+    _allElements.clear();
+    _allNodes.clear();
+  }
 
   BpmnElement? getElementById({required String id}) {
     return _allElements[id];
@@ -35,7 +48,7 @@ class BpmnDiagram {
   //- первого элемента _startElementId
   //- списка всех элементов диаграммы _allElements
   //- списка смежности _allNodes
-  BpmnDiagram.fromList(List<BpmnElement> list) {
+  void fillFromList(List<BpmnElement> list) {
     for (var e in list) {
       if (e.type == 'startEvent') {
         _startElementId = e.id;
@@ -65,6 +78,40 @@ class BpmnDiagram {
         //(он может там уже быть, если уже встретился как source в flowSequence)
         _allNodes.putIfAbsent(e.id, () => []);
       }
+    }
+  }
+
+  //обход диаграммы
+  void traverseDiagram() async {
+    //устанавливаются начальные значения - элемент, с которого начинается обход
+    // и следующий элемент
+    var firstElement = firstElementId();
+    var currentElement = firstElement;
+    var nextElementsToGo = nextElements(id: currentElement);
+
+    //обход продолжается, пока есть следующие элементы
+    while (nextElementsToGo.isNotEmpty) {
+      var currentElementDescr =
+      getElementById(id: currentElement).toString();
+      print(currentElementDescr);
+      nextElementsToGo = nextElements(id: currentElement);
+      //развилка в диаграмме - следующих элементов больше 1
+      if (nextElementsToGo.length > 1) {
+        //устанавливаем элементы, условия из которых будут показываться на кнопках
+        getIt.get<BpmnStore>().nextElements = nextElementsToGo;
+        //условие для показа кнопок
+        getIt.get<BpmnStore>().showChoice = true;
+
+        //ждём пока пользователь не нажмёт на кнопку выбора
+        final completer = Completer<void>();
+        getIt.get<BpmnStore>().userChoiceCompleter = completer;
+        await completer.future;
+
+        currentElement = getIt.get<BpmnStore>().chosenElement;
+      } else if (nextElementsToGo.isNotEmpty) {
+        currentElement = nextElementsToGo[0];
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
     }
   }
 }
