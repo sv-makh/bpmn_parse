@@ -1,18 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:bpmn_parse/data/bpmn_diagram.dart';
-import 'package:bpmn_parse/data/bpmn_element.dart';
-import 'package:bpmn_parse/data/fetcher.dart';
-import 'package:bpmn_parse/data/flow_objects/activities/activity.dart';
-import 'package:bpmn_parse/data/flow_objects/activities/service_task.dart';
-import 'package:bpmn_parse/data/flow_objects/activities/user_task.dart';
-import 'package:bpmn_parse/data/flow_objects/events/end_event.dart';
-import 'package:bpmn_parse/data/flow_objects/events/event.dart';
-import 'package:bpmn_parse/data/flow_objects/events/start_event.dart';
-import 'package:bpmn_parse/data/flow_objects/flow_object.dart';
-import 'package:bpmn_parse/data/flow_objects/gateways/exclusive_gateway.dart';
-import 'package:bpmn_parse/data/flow_objects/gateways/gateway.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:mobx/mobx.dart';
 
@@ -62,8 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Download data & traverse diagram'),
             ),
             Observer(builder: (context) {
-              if (_bpmnStore.isLoading)
+              if (_bpmnStore.isLoading) {
                 return const CircularProgressIndicator();
+              }
               return Text(_bpmnStore.path);
             }),
             const Spacer(),

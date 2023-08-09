@@ -41,6 +41,7 @@ class BpmnElement extends Equatable {
 
   Map<String, dynamic> toJson() => _$BpmnElementToJson(this);
 
+  @override
   String toString() {
     var choice = '';
     if (properties.length == 3) { choice = ' ${properties[2]['value']}'; }
