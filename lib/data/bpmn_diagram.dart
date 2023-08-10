@@ -103,59 +103,21 @@ class BpmnDiagram {
 
     //обход продолжается, пока есть следующие элементы
     while (nextElementsToGo.isNotEmpty) {
-      bool needToWait = false;
-
       //выбрать тип текущего элемента диаграммы
       FlowObject? currentObject = _classifyElement(currentElement);
-      //и выполнить соответствующее действие
-      if (currentObject != null) {
-        needToWait = await _executeFlowObject(currentObject);
-      }
 
       //вывод на экран и в консоль
       var currentElementDescr = getElementById(id: currentElement).toString();
       print(currentElementDescr);
       getIt.get<BpmnStore>().path = currentObject != null
-          ? '${getElementById(id: currentElement)!.type} ${getElementById(id: currentElement)!.metaName}'
+          ? currentElementDescr
           : '';
 
+      //следующие элементы
       nextElementsToGo = nextElements(id: currentElement);
 
-      if (nextElementsToGo.isEmpty) break;
-
-      //если есть необходимость ждать ответа от пользователя
-      if (needToWait) {
-        //устанавливаем элементы, информация из которых будет показываться на кнопках
-
-        //следующий значимый элемент - после flowSequence (т.е. после следующего подряд)
-        var nextElementObject = nextElements(id: nextElementsToGo[0])[0];
-        //если послеследующий элемент шлюз, на кнопках будут условия из flowSequence
-        //которые исходят из шлюза
-        if (getElementById(id: nextElementObject)!.type == 'exclusiveGateway') {
-          getIt.get<BpmnStore>().nextElements =
-              nextElements(id: nextElementObject);
-        } else {
-          //если послеследующий элемент любой другой, то он сам будет на кнопке
-          getIt.get<BpmnStore>().nextElements = [nextElementObject];
-        }
-
-        //условие для показа кнопок
-        getIt.get<BpmnStore>().showChoice = true;
-
-        //ждём пока пользователь не нажмёт на кнопку
-        final completer = Completer<void>();
-        getIt.get<BpmnStore>().userChoiceCompleter = completer;
-        await completer.future;
-
-        currentElement = nextElementsToGo[0];
-      } else { //если необходимости ждать ответа от пользователя нет
-        //если есть выбор, куда дальше идти, идём по ранее выбранному пользоватеме пути
-        if (nextElementsToGo.length > 1) {
-          currentElement = getIt.get<BpmnStore>().chosenElement;
-        } else { //если выбора нет - переходим куда есть)
-          currentElement = nextElementsToGo[0];
-        }
-      }
+      //выполняется действие, соответствующее текущему объекту и выбираем следующий элемент
+      currentElement = await _executeObj(currentObject, nextElementsToGo);
     }
 
     _fillPath();
@@ -179,12 +141,42 @@ class BpmnDiagram {
     }
   }
 
-  //выполняем элемент и возвращаем необходимость ожидать реакции пользователя
-  Future<bool> _executeFlowObject(FlowObject obj) async {
+  //выполняем текущий элемент:
+  //- его соответствующее действие
+  //- при необходимости выбираем что будет на кнопках (если элемент UserTask)
+  //- выбираем следующий элемент
+  //возвращаем следующий элемент
+  Future<String> _executeObj(FlowObject? obj, List<String> nextElementsList) async {
     var varsStorage = getIt.get<BpmnStore>().varsStorage;
     if (obj is Task) {
       await obj.executeAsync(varsStorage);
-      return true;
+
+      if (nextElementsList.isEmpty) return '';
+
+      //устанавливаем элементы, информация из которых будет показываться на кнопках
+
+      //следующий значимый элемент - после flowSequence (т.е. после следующего подряд)
+      var nextElementObject = nextElements(id: nextElementsList[0])[0];
+      //если послеследующий элемент шлюз, на кнопках будут условия из flowSequence
+      //которые исходят из шлюза
+      if (getElementById(id: nextElementObject)!.type == 'exclusiveGateway') {
+        getIt.get<BpmnStore>().nextElements =
+            nextElements(id: nextElementObject);
+      } else {
+        //если послеследующий элемент любой другой, то он сам будет на кнопке
+        getIt.get<BpmnStore>().nextElements = [nextElementObject];
+      }
+
+      //условие для показа кнопок
+      getIt.get<BpmnStore>().showChoice = true;
+
+      //ждём пока пользователь не нажмёт на кнопку
+      final completer = Completer<void>();
+      getIt.get<BpmnStore>().userChoiceCompleter = completer;
+      await completer.future;
+
+      return(nextElementsList[0]);
+
     } else if (obj is Activity) {
       obj.execute(varsStorage);
     } else if (obj is Event) {
@@ -192,7 +184,18 @@ class BpmnDiagram {
     } else if (obj is Gateway) {
       obj.pass(varsStorage);
     }
-    return false;
+
+    if (nextElementsList.isEmpty) return '';
+
+    //во всех случаях, если текущий элемент не user task
+    // (даже если передан null - тогда текущий элемент flowSequence)
+
+    //если есть выбор, куда дальше идти, идём по ранее выбранному пользоватем пути
+    if (nextElementsList.length > 1) {
+      return(getIt.get<BpmnStore>().chosenElement);
+    } else { //если выбора нет - переходим куда есть)
+      return(nextElementsList[0]);
+    }
   }
 
   void _fillPath() {
