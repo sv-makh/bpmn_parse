@@ -49,6 +49,13 @@ class BpmnElement extends Equatable {
     return '$id $type$meta$choice';
   }
 
+  String toStringShort() {
+    var choice = '';
+    if (properties.length == 3) { choice = ' ${properties[2]['value']}'; }
+    var meta = ' ${metaName ?? ''}';
+    return '$meta$choice';
+  }
+
   @override
   List<Object?> get props => [
         id,

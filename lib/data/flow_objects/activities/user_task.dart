@@ -1,6 +1,6 @@
-import 'package:bpmn_parse/data/flow_objects/activities/activity.dart';
+import 'package:bpmn_parse/data/flow_objects/activities/task.dart';
 
-class UserTask extends Activity {
+class UserTask extends Task {
   UserTask(super.id, super.meta);
 
   @override

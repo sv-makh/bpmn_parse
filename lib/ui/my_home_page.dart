@@ -14,7 +14,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   final _bpmnStore = getIt.get<BpmnStore>();
   final _getItDiagram = getIt.get<BpmnDiagram>();
 
@@ -76,7 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: TextButton(
               onPressed: () {
-
                 _bpmnStore.showChoice = false;
                 _bpmnStore.chosenElement = e;
 
@@ -84,7 +82,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 _bpmnStore.userChoiceCompleter?.complete();
               },
               child: Text(
-                  _getItDiagram.getElementById(id: e)!.properties[2]['value'] ?? ''),
+                _getItDiagram.getElementById(id: e)!.toStringShort() == ' '
+                    ? _getItDiagram.getElementById(id: e)!.type
+                    : _getItDiagram.getElementById(id: e)!.toStringShort(),
+              ),
             ),
           )
       ],

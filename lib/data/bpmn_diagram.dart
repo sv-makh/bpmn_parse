@@ -13,6 +13,8 @@ import 'package:bpmn_parse/data/flow_objects/flow_object.dart';
 import 'package:bpmn_parse/data/flow_objects/gateways/exclusive_gateway.dart';
 import 'package:bpmn_parse/data/flow_objects/gateways/gateway.dart';
 
+import 'flow_objects/activities/task.dart';
+
 //рассматриваем диаграмму как ориентированный граф, вершинами являются
 // все элементы диаграммы (всех типов, даже flowSequence)
 //_startElementId - стартовое событие диаграммы
@@ -101,35 +103,59 @@ class BpmnDiagram {
 
     //обход продолжается, пока есть следующие элементы
     while (nextElementsToGo.isNotEmpty) {
+      bool needToWait = false;
+
       //выбрать тип текущего элемента диаграммы
       FlowObject? currentObject = _classifyElement(currentElement);
       //и выполнить соответствующее действие
-      if (currentObject != null) _executeFlowObject(currentObject);
+      if (currentObject != null) {
+        needToWait = await _executeFlowObject(currentObject);
+      }
 
+      //вывод на экран и в консоль
       var currentElementDescr = getElementById(id: currentElement).toString();
       print(currentElementDescr);
-
-      getIt.get<BpmnStore>().path =
-          currentObject != null ? currentObject.toString() : '';
+      getIt.get<BpmnStore>().path = currentObject != null
+          ? '${getElementById(id: currentElement)!.type} ${getElementById(id: currentElement)!.metaName}'
+          : '';
 
       nextElementsToGo = nextElements(id: currentElement);
-      //развилка в диаграмме - следующих элементов больше 1
-      if (nextElementsToGo.length > 1) {
-        //устанавливаем элементы, условия из которых будут показываться на кнопках
-        getIt.get<BpmnStore>().nextElements = nextElementsToGo;
+
+      if (nextElementsToGo.isEmpty) break;
+
+      //если есть необходимость ждать ответа от пользователя
+      if (needToWait) {
+        //устанавливаем элементы, информация из которых будет показываться на кнопках
+
+        //следующий значимый элемент - после flowSequence (т.е. после следующего подряд)
+        var nextElementObject = nextElements(id: nextElementsToGo[0])[0];
+        //если послеследующий элемент шлюз, на кнопках будут условия из flowSequence
+        //которые исходят из шлюза
+        if (getElementById(id: nextElementObject)!.type == 'exclusiveGateway') {
+          getIt.get<BpmnStore>().nextElements =
+              nextElements(id: nextElementObject);
+        } else {
+          //если послеследующий элемент любой другой, то он сам будет на кнопке
+          getIt.get<BpmnStore>().nextElements = [nextElementObject];
+        }
+
         //условие для показа кнопок
         getIt.get<BpmnStore>().showChoice = true;
 
-        //ждём пока пользователь не нажмёт на кнопку выбора
+        //ждём пока пользователь не нажмёт на кнопку
         final completer = Completer<void>();
         getIt.get<BpmnStore>().userChoiceCompleter = completer;
         await completer.future;
 
-        currentElement = getIt.get<BpmnStore>().chosenElement;
-      } else if (nextElementsToGo.isNotEmpty) {
         currentElement = nextElementsToGo[0];
+      } else { //если необходимости ждать ответа от пользователя нет
+        //если есть выбор, куда дальше идти, идём по ранее выбранному пользоватеме пути
+        if (nextElementsToGo.length > 1) {
+          currentElement = getIt.get<BpmnStore>().chosenElement;
+        } else { //если выбора нет - переходим куда есть)
+          currentElement = nextElementsToGo[0];
+        }
       }
-      await Future.delayed(const Duration(milliseconds: 100));
     }
 
     _fillPath();
@@ -153,15 +179,20 @@ class BpmnDiagram {
     }
   }
 
-  void _executeFlowObject(FlowObject obj) {
+  //выполняем элемент и возвращаем необходимость ожидать реакции пользователя
+  Future<bool> _executeFlowObject(FlowObject obj) async {
     var varsStorage = getIt.get<BpmnStore>().varsStorage;
-    if (obj is Activity) {
+    if (obj is Task) {
+      await obj.executeAsync(varsStorage);
+      return true;
+    } else if (obj is Activity) {
       obj.execute(varsStorage);
     } else if (obj is Event) {
       obj.process(varsStorage);
     } else if (obj is Gateway) {
       obj.pass(varsStorage);
     }
+    return false;
   }
 
   void _fillPath() {
